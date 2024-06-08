@@ -276,9 +276,9 @@ def DownloadOCRModel(locale):
 
 def GetGithubApiAsJson(apiUrl):
     # 使用gh时需要跟随登录步骤先登录GitHub
-    print("Please login GitHub first")
     global loginGhOnce
     if not loginGhOnce:
+        print("Please login GitHub first")
         loginGhOnce = True
         subprocess.run(f"{GH_EXE_PATH} auth login")
     result = subprocess.run(f"{GH_EXE_PATH} api --method GET {apiUrl}", stdout=subprocess.PIPE)
@@ -337,6 +337,10 @@ if __name__ == "__main__":
     ForceHaveCMake()
     ForceHaveGH()
     os.chdir(ROOT_DIR)
+    # 刷新一下git配置，不然可能拉取较大的库时会失败（error：RPC failed; curl 92 HTTP/2 stream 0 was not closed cleanly: CANCEL）
+    os.system("git config --unset http.proxy")
+    os.system("git config --unset https.proxy")
+    os.system("git config http.version HTTP/1.1")
     # os.system("git submodule update --init --recursive")
     os.makedirs("temp", exist_ok=True)
     CreatePluginDirs()
@@ -348,8 +352,6 @@ if __name__ == "__main__":
     DownloadOCRModel("ja")
     DownloadCommon()
     BuildLunaHook()
-    if os.path.exists(TEMP_FILES_ROOT_DIR):
-        shutil.rmtree(TEMP_FILES_ROOT_DIR, ignore_errors=True)
     InstallVCLTL()
     InstallThirdLibs()
     BuildPlugins()
