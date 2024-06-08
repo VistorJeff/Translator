@@ -215,12 +215,22 @@ def DownloadLocaleRemulator():
 
 
 def MoveDirectoryContents(srcDir, dstDir):
-    ignoreDir = lambda dirName: dirName == ".git"
-    try:
-        os.makedirs(dstDir, exist_ok=True)
-        shutil.copytree(srcDir, dstDir, ignore=shutil.ignore_patterns(*filter(ignoreDir, os.listdir(srcDir))), dirs_exist_ok=True)
-    except:
-        print(sys.exc_info()[0])
+    # ignoreDir = lambda dirName: dirName == ".git"
+    # try:
+    #     os.makedirs(dstDir, exist_ok=True)
+    #     shutil.copytree(srcDir, dstDir, ignore=shutil.ignore_patterns(*filter(ignoreDir, os.listdir(srcDir))), dirs_exist_ok=True)
+    # except:
+    #     print(sys.exc_info()[0])
+    dirs = os.listdir(srcDir)
+    for dir in dirs:
+        if dir == ".git":
+            continue
+        dirPath = os.path.join(srcDir, dir)
+        try:
+            shutil.move(dirPath, dstDir)
+        except:
+            for _dir in os.listdir(dirPath):
+                shutil.move(os.path.join(dirPath, _dir), os.path.join(dstDir, dir))
 
 
 def DownloadCommon():
@@ -296,7 +306,7 @@ def BuildLunaHook():
         for asset in jsonData["assets"]:
             if asset["name"] == "Release_English.zip":
                 fileName = DownloadNetResource(asset['browser_download_url'])
-                expandDir = ExtractFile(fileName)
+                expandDir = ExtractFile("Release_English.zip")
     lunaHookDir = os.path.join(PLUGIN_ROOT_DIR, "LunaHook")
     MoveFile(f"{expandDir}/LunaHook32.dll", lunaHookDir)
     MoveFile(f"{expandDir}/LunaHost32.dll", lunaHookDir)
